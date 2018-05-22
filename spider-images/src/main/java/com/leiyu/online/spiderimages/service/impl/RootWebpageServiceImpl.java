@@ -3,6 +3,7 @@ package com.leiyu.online.spiderimages.service.impl;
 import com.leiyu.online.spider.common.domain.UrlDomain;
 import com.leiyu.online.spiderimages.service.AbstractWebpageService;
 import com.leiyu.online.spiderimages.service.WebpageService;
+import com.leiyu.online.spiderimages.util.DirUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -24,7 +25,7 @@ import java.util.regex.Pattern;
 @Service
 public class RootWebpageServiceImpl extends AbstractWebpageService {
 
-    private static final String BASEURL = "/media/images/";
+
 
     @Resource(name = "findUrlService")
     private ExecutorService executorService;
@@ -35,19 +36,17 @@ public class RootWebpageServiceImpl extends AbstractWebpageService {
     @Override
     protected void handlePageInfos(Document document,UrlDomain urlDomain) {
 
-        File file = new File(BASEURL + File.separator + urlDomain.getResourceType() + File.separator
-                + urlDomain.getUrlName());
-        if(!file.exists()){
-            file.mkdirs();
-        }
+        final String rootUrl = urlDomain.getResourceType() + File.separator
+                + urlDomain.getDir();
+
+        DirUtils.mkdir(rootUrl);
 
         Elements elements = document.select(".page > a");
         if(null != elements && !elements.isEmpty()){
             Element element = elements.last();
             int totalpages = getTotalPages(element.attr("href"));
             for (int i = 1 ; i <= totalpages ; i++){
-                log.info("获取地址：{}index_{}.html",urlDomain.getUrl(),i);
-                UrlDomain level2 = new UrlDomain();
+                final UrlDomain level2 = new UrlDomain();
                 if(i == 1){
                     level2.setUrl(urlDomain.getUrl());
                 }else {
@@ -63,19 +62,13 @@ public class RootWebpageServiceImpl extends AbstractWebpageService {
                 level2.setIsParent(true);
                 level2.setId(urlDomain.getId());
                 level2.setResourceType(urlDomain.getResourceType());
-                if(i == 1){
-                    executorService.submit(() ->{
-                        webpageService.analysisWebPage(level2);
-                    });
-                }
-                break;
+                level2.setDir(rootUrl + File.separator + i);
+                executorService.submit(() ->{
+                    DirUtils.mkdir(level2.getDir());
+                    webpageService.analysisWebPage(level2);
+                });
 
             }
-        }
-        try {
-            TimeUnit.MINUTES.sleep(10l);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
     }
 

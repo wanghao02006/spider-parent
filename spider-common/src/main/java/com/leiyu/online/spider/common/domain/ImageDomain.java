@@ -39,4 +39,6 @@ public class ImageDomain implements Serializable {
     @Getter @Setter private Integer status;
 
     @Getter @Setter private String resourceType;
+
+    @Getter @Setter private String dir;
 }

@@ -1,9 +1,10 @@
 package com.leiyu.online.spiderimages.service.impl;
 
 import com.leiyu.online.spider.common.domain.UrlDomain;
-import com.leiyu.online.spiderimages.mapper.UrlMapper;
 import com.leiyu.online.spiderimages.service.AbstractWebpageService;
+import com.leiyu.online.spiderimages.service.UrlService;
 import com.leiyu.online.spiderimages.service.WebpageService;
+import com.leiyu.online.spiderimages.util.DirUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -23,13 +24,11 @@ import java.util.regex.Pattern;
 @Slf4j
 public class TwoLevelWebpageServiceImpl extends AbstractWebpageService {
 
-    private static final String BASEURL = "/media/images/";
-
     @Resource(name = "findUrlService")
     private ExecutorService executorService;
 
     @Autowired
-    private UrlMapper urlMapper;
+    private UrlService urlService;
 
     @Resource(name = "thirdLevelWebpageServiceImpl")
     private WebpageService webpageService;
@@ -38,43 +37,55 @@ public class TwoLevelWebpageServiceImpl extends AbstractWebpageService {
     @Transactional(readOnly = false)
     protected void handlePageInfos(Document document, UrlDomain urlDomain) {
         Elements elements = document.select(".news_list li");
+        log.info("url:{},有{}网页",urlDomain,elements.size());
         if(null != elements && !elements.isEmpty()){
+            int num = 0;
             for (Element element : elements){
                 Element a = element.selectFirst("a");
                 String name = a.attr("title");
                 String url = a.attr("href");
-                executorService.submit(() -> {
-                    webpageService.analysisWebPage(savePages(name,url,urlDomain));
-                });
+                final UrlDomain result = savePages(name,url,urlDomain,num++);
+//                executorService.submit(() -> {
+//                    if(null != result){
+//                        webpageService.analysisWebPage(result);
+//                    }else {
+//                        log.info("录入url：{}失败,resourceid:{}",url,urlDomain.getId());
+//                    }
+//
+//                });
 
             }
         }
     }
 
-    private UrlDomain savePages(String name, String url, UrlDomain urlDomain) {
+    private UrlDomain savePages(String name, String url, UrlDomain urlDomain, int dirnum) {
 
-        File file = new File(BASEURL + File.separator + urlDomain.getResourceType() + File.separator
-                + urlDomain.getUrlName() + File.separator + name);
-        if(!file.exists()){
-            file.mkdirs();
-        }
+        String dir = urlDomain.getDir() + File.separator + dirnum;
+
+        DirUtils.mkdir(dir);
 
         url = getAllUrl(url,urlDomain.getBaseUrl());
-        log.info("获取全路径为：{}",url);
-        UrlDomain saveDomain = new UrlDomain();
-        saveDomain.setUrl(url);
-        saveDomain.setParentId(urlDomain.getId());
-        saveDomain.setBaseUrl(urlDomain.getBaseUrl());
-        saveDomain.setIsParent(true);
-        saveDomain.setLevel(urlDomain.getLevel() + 1);
-        saveDomain.setUrlName(name);
-        saveDomain.setStatus(1);
-        saveDomain.setHasDownload(false);
-        saveDomain.setUpdateTime(new Date());
-        saveDomain.setResourceType(urlDomain.getResourceType());
 
-        urlMapper.insertSelective(saveDomain);
-        return saveDomain;
+
+        if(urlService.isExists(url)){
+            log.info("url:{},已经采集，不需要再次录入！",url);
+            return null;
+        }else {
+            UrlDomain saveDomain = new UrlDomain();
+            saveDomain.setUrl(url);
+            saveDomain.setParentId(urlDomain.getId());
+            saveDomain.setBaseUrl(urlDomain.getBaseUrl());
+            saveDomain.setIsParent(true);
+            saveDomain.setLevel(urlDomain.getLevel() + 1);
+            saveDomain.setUrlName(name);
+            saveDomain.setStatus(1);
+            saveDomain.setHasDownload(false);
+            saveDomain.setUpdateTime(new Date());
+            saveDomain.setResourceType(urlDomain.getResourceType());
+            saveDomain.setDir(dir);
+            urlService.insertOneUrl(saveDomain);
+            return saveDomain;
+        }
     }
 
     private String getAllUrl(String newUrl, String baseUrl) {

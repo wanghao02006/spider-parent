@@ -19,7 +19,7 @@ public interface UrlService {
      * 新增网址
      * @return
      */
-    boolean insertOneUrl();
+    boolean insertOneUrl(UrlDomain urlDomain);
 
     /**
      * 查询满足条件的Url信息
@@ -27,4 +27,18 @@ public interface UrlService {
      * @return
      */
     List<UrlDomain> selectUrlsByConditions(UrlDomain urlDomain);
+
+    /**
+     * 判断路径是否存在
+     * @param url
+     * @return
+     */
+    boolean isExists(String url);
+
+    /**
+     * 批量更新
+     * @param domains
+     * @return
+     */
+    boolean batchUpdateUrlStatus(List<UrlDomain> domains);
 }
