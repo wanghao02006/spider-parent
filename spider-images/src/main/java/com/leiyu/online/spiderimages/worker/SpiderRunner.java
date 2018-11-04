@@ -22,6 +22,6 @@ public class SpiderRunner implements ApplicationRunner {
 //        quartzManager.addJob("test","test","test","test",
 //                ImagePageWorker.class,"30 42 22 * * ?");
         quartzManager.addJob("test","test","test","test",
-                DownloadImageWorker.class,"30 34 07 * * ?");
+                DownloadImageWorker.class,"30 36 20 * * ?");
     }
 }

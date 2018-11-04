@@ -33,7 +33,7 @@ public class DownloadImageWorker implements Job {
 
     public void downLoadImages(){
         ImageDomain query = new ImageDomain();
-        query.setStatus(1);
+        query.setStatus(4);
         PageHelper.startPage(1,100);
         List<ImageDomain> images = imageService.selectImagesByCodition(query);
         if(null != images && images.size() > 0){

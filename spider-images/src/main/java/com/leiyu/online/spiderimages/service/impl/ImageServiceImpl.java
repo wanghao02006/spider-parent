@@ -36,7 +36,7 @@ public class ImageServiceImpl implements ImageService {
 
     @Override
     public List<ImageDomain> selectImagesByCodition(ImageDomain imageDomain) {
-        return imagesMapper.select(imageDomain);
+        return imagesMapper.selectTasks(imageDomain);
     }
 
     @Override

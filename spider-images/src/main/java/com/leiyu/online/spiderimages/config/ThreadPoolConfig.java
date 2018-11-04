@@ -16,6 +16,6 @@ public class ThreadPoolConfig {
 
     @Bean
     public ExecutorService downLoadImagesService(){
-        return Executors.newFixedThreadPool(4);
+        return Executors.newFixedThreadPool(10);
     }
 }

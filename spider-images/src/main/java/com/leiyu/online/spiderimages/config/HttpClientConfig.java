@@ -40,6 +40,7 @@ public class HttpClientConfig {
         PoolingHttpClientConnectionManager poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager();
         // 最大连接数
         poolingHttpClientConnectionManager.setMaxTotal(httpMaxTotal);
+        poolingHttpClientConnectionManager.setDefaultMaxPerRoute(httpMaxTotal);
         // 每个主机的最大并发数
         poolingHttpClientConnectionManager.setDefaultMaxPerRoute(httpDefaultMaxPerRoute);
         return poolingHttpClientConnectionManager;
@@ -55,8 +56,8 @@ public class HttpClientConfig {
     @Bean
     @Scope("prototype")
     // 多例对象
-    public CloseableHttpClient closeableHttpClient(PoolingHttpClientConnectionManager manager) {
-        return HttpClients.custom().setConnectionManager(manager).build();
+    public CloseableHttpClient closeableHttpClient(PoolingHttpClientConnectionManager manager,RequestConfig config) {
+        return HttpClients.custom().setDefaultRequestConfig(config).setConnectionManager(manager).build();
     }
 
     // 请求配置
