@@ -3,6 +3,7 @@ package com.leiyu.online.spiderimages.service.impl;
 import com.alibaba.druid.util.StringUtils;
 import com.leiyu.online.spider.common.domain.ImageDomain;
 import com.leiyu.online.spider.common.domain.UrlDomain;
+import com.leiyu.online.spiderimages.enums.ElementRules;
 import com.leiyu.online.spiderimages.service.AbstractWebpageService;
 import com.leiyu.online.spiderimages.service.ImageService;
 import lombok.extern.slf4j.Slf4j;
@@ -23,11 +24,11 @@ public class ThirdLevelWebpageServiceImpl extends AbstractWebpageService {
     private ImageService imageService;
     @Override
     protected void handlePageInfos(Document document, UrlDomain urlDomain) {
-        Elements elements = document.select(".news > img");
+        Elements elements = document.select(ElementRules.getRule(urlDomain.getHandleType()).getImgSelector());
         if(null != elements && !elements.isEmpty()){
             int num = 0;
             for(Element element : elements){
-                String src = element.attr("src");
+                String src = element.attr(ElementRules.getRule(urlDomain.getHandleType()).getImgPath());
                 if(imageService.isExists(src)){
                     log.info("获取图片路径：{}已采集,resourceid:{}",src,urlDomain.getId());
                 }else{

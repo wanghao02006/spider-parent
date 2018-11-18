@@ -1,6 +1,8 @@
 package com.leiyu.online.spiderimages.service.impl;
 
+import com.leiyu.online.spider.common.domain.PageDomain;
 import com.leiyu.online.spider.common.domain.UrlDomain;
+import com.leiyu.online.spiderimages.enums.ElementRules;
 import com.leiyu.online.spiderimages.service.AbstractWebpageService;
 import com.leiyu.online.spiderimages.service.WebpageService;
 import com.leiyu.online.spiderimages.util.DirUtils;
@@ -36,22 +38,18 @@ public class RootWebpageServiceImpl extends AbstractWebpageService {
     @Override
     protected void handlePageInfos(Document document,UrlDomain urlDomain) {
 
-        final String rootUrl = urlDomain.getResourceType() + File.separator
+        final String rootUrl = urlDomain.getHandleType() + File.separator
                 + urlDomain.getDir();
 
         DirUtils.mkdir(rootUrl);
 
-        Elements elements = document.select(".page > a");
+        Elements elements = document.select(ElementRules.getRule(urlDomain.getHandleType()).getPageUrl());
         if(null != elements && !elements.isEmpty()){
             Element element = elements.last();
             int totalpages = getTotalPages(element.attr("href"));
             for (int i = 1 ; i <= totalpages ; i++){
                 final UrlDomain level2 = new UrlDomain();
-                if(i == 1){
-                    level2.setUrl(urlDomain.getUrl());
-                }else {
-                    level2.setUrl(urlDomain.getBaseUrl() + "index_" + i + ".html");
-                }
+                level2.setUrl(getNewUrl(urlDomain.getUrl(), i));
                 level2.setUpdateTime(new Date());
                 level2.setHasDownload(false);
                 level2.setStatus(1);
@@ -62,9 +60,9 @@ public class RootWebpageServiceImpl extends AbstractWebpageService {
                 level2.setIsParent(true);
                 level2.setId(urlDomain.getId());
                 level2.setResourceType(urlDomain.getResourceType());
-                level2.setDir(rootUrl + File.separator + i);
+                level2.setDir(rootUrl + File.separator + "page-" + i);
+                level2.setHandleType(urlDomain.getHandleType());
                 executorService.submit(() ->{
-                    DirUtils.mkdir(level2.getDir());
                     webpageService.analysisWebPage(level2);
                 });
 
@@ -85,8 +83,15 @@ public class RootWebpageServiceImpl extends AbstractWebpageService {
         return Integer.parseInt(find_result);
     }
 
+    private String getNewUrl(String url, int index){
+        return url.replaceAll("(\\d+)", String.valueOf(index));
+    }
+
     public static void main(String[] args) {
         Pattern p = Pattern.compile("(\\d+)");
+
+        System.out.println("/tupianqu/siwa/index_2030.html".replaceAll("(\\d+)","2"));
+        System.out.println("/photolist/allxz/sj/p5.html".replaceAll("(\\d+)","2"));
         Matcher m = p.matcher("/tupianqu/siwa/index_2030.html");
         boolean result = m.find();
         String find_result = null;

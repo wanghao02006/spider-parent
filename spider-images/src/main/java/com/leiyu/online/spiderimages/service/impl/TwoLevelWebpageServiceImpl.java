@@ -1,6 +1,7 @@
 package com.leiyu.online.spiderimages.service.impl;
 
 import com.leiyu.online.spider.common.domain.UrlDomain;
+import com.leiyu.online.spiderimages.enums.ElementRules;
 import com.leiyu.online.spiderimages.service.AbstractWebpageService;
 import com.leiyu.online.spiderimages.service.UrlService;
 import com.leiyu.online.spiderimages.service.WebpageService;
@@ -36,8 +37,8 @@ public class TwoLevelWebpageServiceImpl extends AbstractWebpageService {
     @Override
     @Transactional(readOnly = false)
     protected void handlePageInfos(Document document, UrlDomain urlDomain) {
-        Elements elements = document.select(".news_list li");
-        log.info("url:{},有{}网页",urlDomain,elements.size());
+        Elements elements = document.select(ElementRules.getRule(urlDomain.getHandleType()).getPageInfo());
+        log.info("url:{},有{}网页",urlDomain.getPageUrl(),elements.size());
         if(null != elements && !elements.isEmpty()){
             int num = 0;
             for (Element element : elements){
@@ -60,9 +61,7 @@ public class TwoLevelWebpageServiceImpl extends AbstractWebpageService {
 
     private UrlDomain savePages(String name, String url, UrlDomain urlDomain, int dirnum) {
 
-        String dir = urlDomain.getDir() + File.separator + dirnum;
-
-        DirUtils.mkdir(dir);
+        String dir = urlDomain.getDir() + File.separator + name;
 
         url = getAllUrl(url,urlDomain.getBaseUrl());
 
@@ -83,20 +82,14 @@ public class TwoLevelWebpageServiceImpl extends AbstractWebpageService {
             saveDomain.setUpdateTime(new Date());
             saveDomain.setResourceType(urlDomain.getResourceType());
             saveDomain.setDir(dir);
+            saveDomain.setHandleType(urlDomain.getHandleType());
             urlService.insertOneUrl(saveDomain);
             return saveDomain;
         }
     }
 
     private String getAllUrl(String newUrl, String baseUrl) {
-        Pattern p = Pattern.compile("(\\d+)");
-        Matcher m = p.matcher(newUrl);
-        boolean result = m.find();
-        String find_result = null;
-        if (result)
-        {
-            find_result = m.group(1);
-        }
-        return baseUrl + find_result + ".html";
+
+        return newUrl;
     }
 }

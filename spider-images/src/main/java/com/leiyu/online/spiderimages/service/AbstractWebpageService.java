@@ -14,7 +14,7 @@ public abstract class AbstractWebpageService implements WebpageService {
 
     @Override
     public void analysisWebPage(UrlDomain urlDomain) {
-        Document document = getDocument(urlDomain.getUrl(),0);
+        Document document = getDocument(urlDomain.getPageUrl(),0);
         if(null == document){
             throw new RuntimeException("获取信息异常！");
         }

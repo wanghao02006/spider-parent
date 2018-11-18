@@ -11,32 +11,31 @@ import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.Date;
 
-@Table(name = "spider_images")
-@ToString
+@Table(name = "spider_url")
 @Setter
 @Getter
-public class ImageDomain implements Serializable {
+@ToString
+public class PageDomain implements Serializable {
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
-    private Long sourceId;
-    private String url;
-    private String resourceName;
-    private Integer no;
-    private Long size;
-    private Date updateTime;
+    private Long parentId;
 
+    private String url;
+
+    private String urlName;
+    private String baseUrl;
+    private Integer level;
+    private Boolean isParent;
+    private Date updateTime;
+    private Boolean hasDownload;
     /**
      * 状态：1：初始，2：失败，3：成功
      */
     private Integer status;
 
     private String resourceType;
-
     private String dir;
-
-    private boolean isDelete;
-
-    private Integer retryCount;
+    private String handleType;
 }

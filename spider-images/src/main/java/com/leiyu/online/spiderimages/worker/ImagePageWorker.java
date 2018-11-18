@@ -43,7 +43,7 @@ public class ImagePageWorker implements Job{
         query.setIsParent(true);
         query.setHasDownload(false);
         query.setLevel(3);
-        PageHelper.startPage(1,200);
+        PageHelper.startPage(1,1000);
         List<UrlDomain> lists = urlService.selectUrlsByConditions(query);
         log.info("list size:{}",lists.size());
         if(null != lists && lists.size() > 0){
